@@ -22,18 +22,32 @@ typedef struct memory_block_struct {
 *  STUDENT TODO:
 *      Write 1-2 sentences for each function explaining what it does. Don't just repeat the name of the function back to us.
 */
+
+// Makes sure that the block is not NULL and then returns true if the bit0 of block equals 1 (is a allocated) 
+// otherwise returns false if the bit0 of block equals 0 (is a free block).
 bool is_allocated(memory_block_t *block);
+// Checks if the block is not NULL and then changes the bit0 of block to a 1 (meaning it is allocated).
 void allocate(memory_block_t *block);
+// 
 void deallocate(memory_block_t *block);
+//
 size_t get_size(memory_block_t *block);
+//
 memory_block_t *get_next(memory_block_t *block);
+//
 void put_block(memory_block_t *block, size_t size, bool alloc);
+//
 void *get_payload(memory_block_t *block);
+//
 memory_block_t *get_block(void *payload);
 
+//
 memory_block_t *find(size_t size);
+//
 memory_block_t *extend(size_t size);
+//
 memory_block_t *split(memory_block_t *block, size_t size);
+//
 memory_block_t *coalesce(memory_block_t *block);
 
 

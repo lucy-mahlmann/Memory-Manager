@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-const char author[] = ANSI_BOLD ANSI_COLOR_RED "REPLACE THIS WITH YOUR NAME AND UT EID" ANSI_RESET;
+const char author[] = ANSI_BOLD ANSI_COLOR_RED "Lucy Mahlmann lam6744" ANSI_RESET;
 
 /*
  * The following helpers can be used to interact with the memory_block_t
@@ -18,7 +18,7 @@ memory_block_t *free_head;
  * is_allocated - returns true if a block is marked as allocated.
  */
 bool is_allocated(memory_block_t *block) {
-    assert(block != NULL);
+    assert(block != NULL); // assert() if value evaulates to false then an error message is printed out
     return block->block_size_alloc & 0x1;
 }
 
