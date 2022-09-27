@@ -26,22 +26,23 @@ typedef struct memory_block_struct {
 // Makes sure that the block is not NULL and then returns true if the bit0 of block equals 1 (is a allocated) 
 // otherwise returns false if the bit0 of block equals 0 (is a free block).
 bool is_allocated(memory_block_t *block);
-// Checks if the block is not NULL and then changes the bit0 of block to a 1 (meaning it is allocated).
+// Checks if the block is not NULL and then changes the bit0 of block to a 1. This sets it as an allocated block.
 void allocate(memory_block_t *block);
-// 
+// Checks if the block is not NULL and then changes the bit0 of block to a 0. This sets the block as a free block.
 void deallocate(memory_block_t *block);
-//
+// 
 size_t get_size(memory_block_t *block);
-//
+// Checks if the block is not NULL and then dereferences the block pointer to access the next field
+// and returns the memory_block_t pointer to the next block
 memory_block_t *get_next(memory_block_t *block);
 //
 void put_block(memory_block_t *block, size_t size, bool alloc);
-//
+// 
 void *get_payload(memory_block_t *block);
-//
+// 
 memory_block_t *get_block(void *payload);
 
-//
+// 
 memory_block_t *find(size_t size);
 //
 memory_block_t *extend(size_t size);
