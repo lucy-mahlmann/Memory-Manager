@@ -87,7 +87,11 @@ memory_block_t *get_block(void *payload) {
 /*
  *  STUDENT TODO:
  *      Describe how you select which free block to allocate. What placement strategy are you using?
-        Finds first block in the list that is large enough to fit the allocated data amount
+        
+        -Finds first block in the list that is large enough to fit the allocated data amount but never give
+        the free head to be allocated so always go to the next block after the free head. If there is not a free 
+        block big enough for the size the user is asking for then extend the heap by size and give that block to 
+        be allocated.
  */
 
 /*
@@ -98,12 +102,16 @@ memory_block_t *find(size_t size) {
     //? STUDENT TODO
     memory_block_t* curr_block = free_head;
     curr_block = free_head->next; // never allocate free_head
+    memory_block_t* prev_block = free_head;
     while (curr_block != NULL) {
-        size_t curr_size = get_size(curr_block) + 16; // should be 16??
+        size_t curr_size = get_size(curr_block) + 16; 
         if (size <= curr_size) {
+            //split(curr_block);
+            prev_block->next = get_next(curr_block); // removes the allocated block from the free list
             return curr_block;
         }
         curr_block = get_next(curr_block);
+        prev_block = curr_block;
     }
     // could not find a spot large enough for the allocated size 
     // call coalence to see if you can merge free blocks together and research 
@@ -116,11 +124,9 @@ memory_block_t *find(size_t size) {
  */
 memory_block_t *extend(size_t size) {
     //? STUDENT TODO
-    // extend heap if possible by size
-    // make new block for this new memory, setting a header
-    // immediately sends this block to user to allocate so you don't have to add to free list
-    // mark block as allocated , returns get_payload(block) so they get the memory address
-    memory_block_t* new_block = (memory_block_t*) csbrk(size); // should be plus 16??
+    // extends heap if possible by size
+    // immediately sends this block to user to allocate therefore don't have to add to free list
+    memory_block_t* new_block = (memory_block_t*) csbrk(size);
     put_block(new_block, size - 16, true);
     return new_block;
 }
@@ -128,7 +134,8 @@ memory_block_t *extend(size_t size) {
 /*
  *  STUDENT TODO:
  *      Describe how you chose to split allocated blocks. Always? Sometimes? Never? Which end?
-        Always split the allocated blocks using the high end of the block as the part that will be 
+       
+       - Always split the allocated blocks using the high end of the block as the part that will be 
         allocated and the low end will stay a free block.
 */
 
@@ -168,12 +175,17 @@ memory_block_t *coalesce(memory_block_t *block) {
  */
 int uinit() {
     //* STUDENT TODO
-    // call sbrk to get heap amount
-    // write in a header (size of heap - 16 and NULL) to make one large free bloc
     memory_block_t* free_head_block = (memory_block_t*)csbrk(PAGESIZE);
     free_head = free_head_block;
-    put_block(free_head_block, PAGESIZE - 16, false);
-    free_head_block->next = NULL;
+    // put_block(free_head_block, PAGESIZE - 16, false);
+    // free_head_block->next = NULL;
+
+    put_block(free_head_block, 32, false);
+    memory_block_t* usable_memory = free_head_block + 2;
+    put_block(usable_memory, PAGESIZE - 48, false);
+    free_head_block->next = usable_memory;
+    usable_memory->next = NULL;
+
     return 0;
 }
 
@@ -182,12 +194,9 @@ int uinit() {
  */
 void *umalloc(size_t size) {
     //* STUDENT TODO
-    // first get 16 Bit alignment
     size_t payload_size = ALIGN(size);
     memory_block_t* curr_block = find(payload_size + 16);
-    //curr_block = split(curr_block, min_size);
     allocate(curr_block);
-    
     return get_payload(curr_block); // how to get a pointer that is past the header
 }
 
