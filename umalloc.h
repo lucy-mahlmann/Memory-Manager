@@ -12,7 +12,7 @@
  * and the remaining 60 bit represent the size.
  */
 typedef struct memory_block_struct {
-    size_t block_size_alloc;
+    size_t block_size_alloc; // is the size of the block minus the header
     struct memory_block_struct *next;
 } memory_block_t;
 
@@ -46,13 +46,9 @@ void *get_payload(memory_block_t *block);
 // payload given from the void pointer payload.
 memory_block_t *get_block(void *payload);
 
-// 
 memory_block_t *find(size_t size);
-//
 memory_block_t *extend(size_t size);
-//
 memory_block_t *split(memory_block_t *block, size_t size);
-//
 memory_block_t *coalesce(memory_block_t *block);
 
 

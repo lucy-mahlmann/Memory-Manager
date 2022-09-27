@@ -106,7 +106,9 @@ memory_block_t *find(size_t size) {
     while (curr_block != NULL) {
         size_t curr_size = get_size(curr_block) + 16; 
         if (size <= curr_size) {
-            //split(curr_block);
+            if (size < curr_size) {
+                return split(curr_block, size);
+            }
             prev_block->next = get_next(curr_block); // removes the allocated block from the free list
             return curr_block;
         }
@@ -142,19 +144,13 @@ memory_block_t *extend(size_t size) {
 /*
  * split - splits a given block in parts, one allocated, one free.
  */
-memory_block_t *split(memory_block_t *block, size_t size) {
+memory_block_t *split(memory_block_t *block, size_t size) { // size includes the header
     //? STUDENT TODO
-    // check if we even need to split
-    if (get_size(block) == size - 16) {
-        return block;
-    }
-    // update size in original block to be get_size(block) - size
+    // update size in original free block
     block->block_size_alloc = get_size(block) - size;
     // make new memory block for the allocated block
-    // maybe use put_block ??
     memory_block_t* allocated_block = block + get_size(block) + 16;
-    allocated_block->block_size_alloc = size - 16;
-    allocate(allocated_block);
+    put_block(allocated_block, size - 16, true);
     // returns the allocated block, add free block to free list
     return allocated_block;
 }
