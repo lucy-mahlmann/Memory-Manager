@@ -30,16 +30,20 @@ bool is_allocated(memory_block_t *block);
 void allocate(memory_block_t *block);
 // Checks if the block is not NULL and then changes the bit0 of block to a 0. This sets the block as a free block.
 void deallocate(memory_block_t *block);
-// 
+// Checks if the block is not NULL and returns the value that is stored in the memory_block_t->block_size_alloc 
+// variable. This is the value that represents the size of the block minues the metadata that holds the header. 
 size_t get_size(memory_block_t *block);
 // Checks if the block is not NULL and then dereferences the block pointer to access the next field
-// and returns the memory_block_t pointer to the next block
+// and returns the memory_block_t pointer to the next block if it is a free block or NULL if last free block in free list.
 memory_block_t *get_next(memory_block_t *block);
-//
+// Puts a memory_block_t struct into the memory address that is specified by the pointer block and sets the block_size_alloc
+// variable as the size and sets the bit0 of the header to 1 (if allocated) or 0 (if free).
 void put_block(memory_block_t *block, size_t size, bool alloc);
-// 
+// Checks if block is not NULL and returns a void pointer to the start of the payload in the given
+// memory_block_t block. This is the part of the block that does not include the header and is given to the user.
 void *get_payload(memory_block_t *block);
-// 
+// Checks if the payload is not NULL and returns a memory_block_t pointer of the block that has the corresponding
+// payload given from the void pointer payload.
 memory_block_t *get_block(void *payload);
 
 // 

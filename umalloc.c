@@ -94,6 +94,7 @@ memory_block_t *get_block(void *payload) {
  * find - finds a free block that can satisfy the umalloc request.
  */
 memory_block_t *find(size_t size) {
+    // size includes the header
     //? STUDENT TODO
     memory_block_t* curr_block = free_head;
     curr_block = free_head->next; // never allocate free_head
@@ -119,8 +120,8 @@ memory_block_t *extend(size_t size) {
     // make new block for this new memory, setting a header
     // immediately sends this block to user to allocate so you don't have to add to free list
     // mark block as allocated , returns get_payload(block) so they get the memory address
-    memory_block_t* new_block = csbrk(size); // should be plus 16??
-    put_block(new_block, size, true);
+    memory_block_t* new_block = (memory_block_t*) csbrk(size); // should be plus 16??
+    put_block(new_block, size - 16, true);
     return new_block;
 }
 
@@ -169,15 +170,10 @@ int uinit() {
     //* STUDENT TODO
     // call sbrk to get heap amount
     // write in a header (size of heap - 16 and NULL) to make one large free bloc
-    memory_block_t* free_head_block = csbrk(PAGESIZE);
+    memory_block_t* free_head_block = (memory_block_t*)csbrk(PAGESIZE);
     free_head = free_head_block;
-    free_head_block->block_size_alloc = 16; // use put_block instead
-    memory_block_t* heap_block = get_payload(free_head_block) + 1;
-    free_head_block->next = heap_block;
-    heap_block->block_size_alloc = PAGESIZE - 3;
-    heap_block->next = NULL;
-
-    // 
+    put_block(free_head_block, PAGESIZE - 16, false);
+    free_head_block->next = NULL;
     return 0;
 }
 
@@ -187,10 +183,11 @@ int uinit() {
 void *umalloc(size_t size) {
     //* STUDENT TODO
     // first get 16 Bit alignment
-    size_t min_size = ALIGN(size + 16);
-    memory_block_t* curr_block = find(min_size);
-    curr_block = split(curr_block, min_size);
-    curr_block->block_size_alloc = size;
+    size_t payload_size = ALIGN(size);
+    memory_block_t* curr_block = find(payload_size + 16);
+    //curr_block = split(curr_block, min_size);
+    allocate(curr_block);
+    
     return get_payload(curr_block); // how to get a pointer that is past the header
 }
 
