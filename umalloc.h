@@ -46,9 +46,15 @@ void *get_payload(memory_block_t *block);
 // payload given from the void pointer payload.
 memory_block_t *get_block(void *payload);
 
+// Find the first block that has will fit the size of the block given, if none is found then call extend to extend the 
+// heap by size. Then if necessary remove the found block from free list, split the found block, and return the block.
 memory_block_t *find(size_t size);
+// Use csbrk to get a block of memory of size and immediately return that block to the user.
 memory_block_t *extend(size_t size);
+// Always split the given block using the high end of the block as the part that will be 
+// allocated and the low end will stay a free block.
 memory_block_t *split(memory_block_t *block, size_t size);
+// Never coalesce.
 memory_block_t *coalesce(memory_block_t *block);
 
 

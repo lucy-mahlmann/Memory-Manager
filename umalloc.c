@@ -88,7 +88,7 @@ memory_block_t *get_block(void *payload) {
  *  STUDENT TODO:
  *      Describe how you select which free block to allocate. What placement strategy are you using?
         
-        -Finds first block in the list that is large enough to fit the allocated data amount but never give
+        -Finds first block in the list that is large enough to fit the allocated data amount but never gives
         the free head to be allocated so always go to the next block after the free head. If there is not a free 
         block big enough for the size the user is asking for then extend the heap by size and give that block to 
         be allocated.
@@ -117,9 +117,8 @@ memory_block_t *find(size_t size) {
         curr_block = get_next(curr_block);
     }
     // could not find a spot large enough for the allocated size 
-    // call coalence to see if you can merge free blocks together and research 
+    // call coalence to see if you can merge free blocks together and research through free list
     return extend(size);
-    //return NULL;
 }
 
 /*
@@ -138,7 +137,7 @@ memory_block_t *extend(size_t size) {
  *  STUDENT TODO:
  *      Describe how you chose to split allocated blocks. Always? Sometimes? Never? Which end?
        
-       - Always split the allocated blocks using the high end of the block as the part that will be 
+       - Always split the given block using the high end of the block as the part that will be 
         allocated and the low end will stay a free block.
 */
 
@@ -152,7 +151,6 @@ memory_block_t *split(memory_block_t *block, size_t size) { // size includes the
     // make new memory block for the allocated block
     memory_block_t* allocated_block = (memory_block_t*)((long) block + get_size(block) + 16);
     put_block(allocated_block, size - 16, true);
-    // returns the allocated block, add free block to free list
     return allocated_block;
 }
 
@@ -176,13 +174,11 @@ int uinit() {
     free_head = free_head_block;
     // put_block(free_head_block, PAGESIZE - 16, false);
     // free_head_block->next = NULL;
-
     put_block(free_head_block, 16, false);
     memory_block_t* usable_memory = free_head_block + 2;
     put_block(usable_memory, PAGESIZE - 48, false);
     free_head_block->next = usable_memory;
     usable_memory->next = NULL;
-
     return 0;
 }
 
@@ -200,6 +196,8 @@ void *umalloc(size_t size) {
 /*
  *  STUDENT TODO:
  *      Describe your free block insertion policy.
+        -The free list is address sorted so insert the block given behind the first free block in the free list
+        that has an address greater than it.
 */
 
 /*
@@ -208,33 +206,25 @@ void *umalloc(size_t size) {
  */
 void ufree(void *ptr) {
     //* STUDENT TODO
-    // go through free list until you find a block that has a address greater than this block and keep
-    // track of prev block as well and set as next of prev block to this block and this block next to 
-    // the block with the address that is greater
-
-    // only go if it has been called in a previous call in malloc
     memory_block_t* target = get_block(ptr);
     deallocate(target);
-    // has been called previous by malloc and is an allocated block
-   // if (target != NULL && is_allocated(target)) {
-        memory_block_t* curr = free_head->next;
-        memory_block_t* prev = free_head;
-        // change ptr to a free block with deallocate()
-        // search through free list
-        while (curr != NULL) {
-            // check if address of curr is greater than the addres of target
-            if (curr > target) {
-                // set next of target to curr
-                target->next = curr;
-                // set next of prev to target
-                prev->next = target;
-            }
-            prev = curr;
-            curr = get_next(curr);
-            // reached end of free list, add target to end of list
-            if (curr == NULL) {
-                prev->next = target;
-                target->next = NULL;
-            }
+    memory_block_t* curr = free_head->next;
+    memory_block_t* prev = free_head;
+    // search through free list
+    while (curr != NULL) {
+        // check if address of curr is greater than the addres of target
+        if (curr > target) {
+            // set next of target to curr
+            target->next = curr;
+            // set next of prev to target
+            prev->next = target;
         }
+        prev = curr;
+        curr = get_next(curr);
+        // reached end of free list, add target to end of list
+        if (curr == NULL) {
+            prev->next = target;
+            target->next = NULL;
+        }
+    }
 }
