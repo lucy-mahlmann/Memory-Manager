@@ -149,7 +149,7 @@ memory_block_t *split(memory_block_t *block, size_t size) { // size includes the
     // update size in original free block
     block->block_size_alloc = get_size(block) - size;
     // make new memory block for the allocated block
-    memory_block_t* allocated_block = block + get_size(block) + 16;
+    memory_block_t* allocated_block = (memory_block_t*)((long) block + get_size(block) + 16);
     put_block(allocated_block, size - 16, true);
     // returns the allocated block, add free block to free list
     return allocated_block;
@@ -193,7 +193,7 @@ void *umalloc(size_t size) {
     size_t payload_size = ALIGN(size);
     memory_block_t* curr_block = find(payload_size + 16);
     allocate(curr_block);
-    return get_payload(curr_block); // how to get a pointer that is past the header
+    return get_payload(curr_block); // return the ptr that is just the payload (doesn't include the header)
 }
 
 /*

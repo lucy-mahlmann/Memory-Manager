@@ -42,12 +42,5 @@ int check_heap() {
         current = get_next(current);
     }
 
-    // not overlapping check if the ending address of current is less than the starting address of next
-    // checking within the heap, see what the minimum value that csbreak returns and then see what highest value 
-    // csbreak returns and then make sure current is within these two values 
-    // keep two global variables to what csbrk min and max values are, update when you extend/unit 
-    // to get to the end of a block is curr + pagesize -16 + 16
-
-
     return 0;
 }
