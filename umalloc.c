@@ -110,10 +110,11 @@ memory_block_t *find(size_t size) {
                 return split(curr_block, size);
             }
             prev_block->next = get_next(curr_block); // removes the allocated block from the free list
+            allocate(curr_block);
             return curr_block;
         }
-        curr_block = get_next(curr_block);
         prev_block = curr_block;
+        curr_block = get_next(curr_block);
     }
     // could not find a spot large enough for the allocated size 
     // call coalence to see if you can merge free blocks together and research 
@@ -213,28 +214,27 @@ void ufree(void *ptr) {
 
     // only go if it has been called in a previous call in malloc
     memory_block_t* target = get_block(ptr);
+    deallocate(target);
     // has been called previous by malloc and is an allocated block
-    if (target != NULL && is_allocated(target)) {
+   // if (target != NULL && is_allocated(target)) {
         memory_block_t* curr = free_head->next;
         memory_block_t* prev = free_head;
         // change ptr to a free block with deallocate()
         // search through free list
-        while (curr <= target && curr != NULL) {
+        while (curr != NULL) {
             // check if address of curr is greater than the addres of target
-             if (curr > target) {
+            if (curr > target) {
                 // set next of target to curr
                 target->next = curr;
                 // set next of prev to target
                 prev->next = target;
-             }
-            curr = get_next(curr);
+            }
             prev = curr;
+            curr = get_next(curr);
             // reached end of free list, add target to end of list
             if (curr == NULL) {
-                curr->next = target;
+                prev->next = target;
                 target->next = NULL;
             }
         }
-        deallocate(target);
-     }
 }
