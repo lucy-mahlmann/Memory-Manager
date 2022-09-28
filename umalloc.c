@@ -171,12 +171,12 @@ memory_block_t *coalesce(memory_block_t *block) {
  */
 int uinit() {
     //* STUDENT TODO
-    memory_block_t* free_head_block = (memory_block_t*)csbrk(PAGESIZE);
+    memory_block_t* free_head_block = (memory_block_t*) csbrk(PAGESIZE);
     free_head = free_head_block;
     // put_block(free_head_block, PAGESIZE - 16, false);
     // free_head_block->next = NULL;
 
-    put_block(free_head_block, 32, false);
+    put_block(free_head_block, 16, false);
     memory_block_t* usable_memory = free_head_block + 2;
     put_block(usable_memory, PAGESIZE - 48, false);
     free_head_block->next = usable_memory;
@@ -207,8 +207,34 @@ void *umalloc(size_t size) {
  */
 void ufree(void *ptr) {
     //* STUDENT TODO
-    //go through free list until you find a block that has a address greater than this block and keep
+    // go through free list until you find a block that has a address greater than this block and keep
     // track of prev block as well and set as next of prev block to this block and this block next to 
     // the block with the address that is greater
 
+    // only go if it has been called in a previous call in malloc
+    memory_block_t* target = get_block(ptr);
+    // has been called previous by malloc and is an allocated block
+    if (target != NULL && is_allocated(target)) {
+        memory_block_t* curr = free_head->next;
+        memory_block_t* prev = free_head;
+        // change ptr to a free block with deallocate()
+        // search through free list
+        while (curr <= target && curr != NULL) {
+            // check if address of curr is greater than the addres of target
+             if (curr > target) {
+                // set next of target to curr
+                target->next = curr;
+                // set next of prev to target
+                prev->next = target;
+             }
+            curr = get_next(curr);
+            prev = curr;
+            // reached end of free list, add target to end of list
+            if (curr == NULL) {
+                curr->next = target;
+                target->next = NULL;
+            }
+        }
+        deallocate(target);
+     }
 }

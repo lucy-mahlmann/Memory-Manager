@@ -18,7 +18,7 @@ extern sbrk_block *sbrk_blocks;
  *      - Ensure that each memory_block is aligned. 
  * 
  * Should return 0 if the heap is still consistent, otherwise return a non-zero
- * return code. Asserts are also a useful tool here.
+ * return code. Asserts are also a useful tool here. 
  */
 int check_heap() {
     memory_block_t* current = free_head;
@@ -36,7 +36,7 @@ int check_heap() {
             return -1;
         }
         // check if current block is overlapping with the next block
-        if (!((long) current + get_size(current) + 16 < (long) get_next(current))) {
+        if (get_next(current) != NULL  && ((long) current + get_size(current) + 16 > (long) get_next(current))) {
             return -1;
         }
         current = get_next(current);
