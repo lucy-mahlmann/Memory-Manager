@@ -4,6 +4,8 @@
 
 //Place any variables needed here from umalloc.c or csbrk.c as an extern.
 extern memory_block_t *free_head;
+extern memory_block_t* lowest_heap;
+extern memory_block_t* highest_heap;
 extern sbrk_block *sbrk_blocks;
 
 /*
@@ -23,12 +25,13 @@ extern sbrk_block *sbrk_blocks;
 int check_heap() {
     memory_block_t* current = free_head;
     while(current != NULL) {
+        size_t current_size = get_size(current) + 16;
         // Check if there are any allocated blocks in the free list.
         if (is_allocated(current)) {
             return -1;
         }
         // check that free blocks are within the valid heap address
-        if (check_malloc_output(current, get_size(current) + 16) == -1) {   
+        if (current < lowest_heap && (memory_block_t*)((long) current + current_size) > highest_heap) {   
             return -1;
         }
         // check if block is 16 bit aligned
@@ -36,7 +39,7 @@ int check_heap() {
             return -1;
         }
         // check if current block is overlapping with the next block
-        if (get_next(current) != NULL  && ((long) current + get_size(current) + 16 > (long) get_next(current))) {
+        if (get_next(current) != NULL  && ((long) current + current_size > (long) get_next(current))) {
             return -1;
         }
         current = get_next(current);

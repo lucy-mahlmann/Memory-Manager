@@ -13,6 +13,10 @@ const char author[] = ANSI_BOLD ANSI_COLOR_RED "Lucy Mahlmann lam6744" ANSI_RESE
 
 // A sample pointer to the start of the free list.
 memory_block_t *free_head;
+// A block pointer to the lowest address in the heap
+memory_block_t* lowest_heap;
+// A block pointer to the highest addres in the heap
+memory_block_t* highest_heap;
 
 /*
  * is_allocated - returns true if a block is marked as allocated.
@@ -98,13 +102,13 @@ memory_block_t *get_block(void *payload) {
  * find - finds a free block that can satisfy the umalloc request.
  */
 memory_block_t *find(size_t size) {
-    // size includes the header
-    //? STUDENT TODO
+    // Size includes the header bits.
     memory_block_t* curr_block = free_head;
     curr_block = free_head->next; // never allocate free_head
     memory_block_t* prev_block = free_head;
     while (curr_block != NULL) {
         size_t curr_size = get_size(curr_block) + 16; 
+        // Finds the first block that is big enough to satisfy the umalloc request.
         if (size <= curr_size) {
             if (size < curr_size) {
                 return split(curr_block, size);
@@ -116,20 +120,28 @@ memory_block_t *find(size_t size) {
         prev_block = curr_block;
         curr_block = get_next(curr_block);
     }
-    // could not find a spot large enough for the allocated size 
-    // call coalence to see if you can merge free blocks together and research through free list
-    return extend(size);
+    // Could not find a spot large enough for the allocated size.
+    // Try coalescing free blocks and search through list again for a large enough block. 
+    return extend(size); 
 }
 
 /*
  * extend - extends the heap if more memory is required.
  */
 memory_block_t *extend(size_t size) {
-    //? STUDENT TODO
-    // extends heap if possible by size
-    // immediately sends this block to user to allocate therefore don't have to add to free list
+    // Extends the heap if possible by size.
     memory_block_t* new_block = (memory_block_t*) csbrk(size);
+    // Immediately sends this block to user to allocate therefore it doesn't have to be added to the free list.
     put_block(new_block, size - 16, true);
+
+    // update lowest and highest addresses in heap.
+    if (new_block < lowest_heap) {
+        lowest_heap = new_block;
+    } 
+    memory_block_t* new_block_end_address = (memory_block_t*)((long) new_block + size);
+    if (new_block_end_address > highest_heap) {
+        highest_heap = new_block_end_address;
+    }
     return new_block;
 }
 
@@ -145,10 +157,9 @@ memory_block_t *extend(size_t size) {
  * split - splits a given block in parts, one allocated, one free.
  */
 memory_block_t *split(memory_block_t *block, size_t size) { // size includes the header
-    //? STUDENT TODO
-    // update size in original free block
+    // Update size in original free block.
     block->block_size_alloc = get_size(block) - size;
-    // make new memory block for the allocated block
+    // Make new memory block for the allocated block.
     memory_block_t* allocated_block = (memory_block_t*)((long) block + get_size(block) + 16);
     put_block(allocated_block, size - 16, true);
     return allocated_block;
@@ -169,16 +180,20 @@ memory_block_t *coalesce(memory_block_t *block) {
  * along with allocating initial memory.
  */
 int uinit() {
-    //* STUDENT TODO
+    // Creates a header block that is never allocated to the user. Is the start of the free list.
     memory_block_t* free_head_block = (memory_block_t*) csbrk(PAGESIZE);
     free_head = free_head_block;
-    // put_block(free_head_block, PAGESIZE - 16, false);
-    // free_head_block->next = NULL;
     put_block(free_head_block, 16, false);
+    // Creates a block for the rest of the heap given from csbrk that can be allocated.
     memory_block_t* usable_memory = free_head_block + 2;
     put_block(usable_memory, PAGESIZE - 48, false);
     free_head_block->next = usable_memory;
     usable_memory->next = NULL;
+
+    // Assign pointers to the lowest and highest address in the heap.
+    lowest_heap = free_head_block;
+    highest_heap = (memory_block_t*)((long) free_head_block + PAGESIZE);
+
     return 0;
 }
 
@@ -186,8 +201,8 @@ int uinit() {
  * umalloc -  allocates size bytes and returns a pointer to the allocated memory.
  */
 void *umalloc(size_t size) {
-    //* STUDENT TODO
     size_t payload_size = ALIGN(size);
+    // Find a block within the free list that will satisfy the umalloc request or extend the heap.
     memory_block_t* curr_block = find(payload_size + 16);
     allocate(curr_block);
     return get_payload(curr_block); // return the ptr that is just the payload (doesn't include the header)
@@ -205,23 +220,23 @@ void *umalloc(size_t size) {
  * by a previous call to malloc.
  */
 void ufree(void *ptr) {
-    //* STUDENT TODO
+    // Get the block address that is associated with the ptr to its payload.
     memory_block_t* target = get_block(ptr);
     deallocate(target);
     memory_block_t* curr = free_head->next;
     memory_block_t* prev = free_head;
-    // search through free list
+    // Search through free list to determine where to add target.
     while (curr != NULL) {
-        // check if address of curr is greater than the addres of target
+        // Check if address of curr is greater than the addres of target.
         if (curr > target) {
-            // set next of target to curr
+            // Set next of target to curr.
             target->next = curr;
-            // set next of prev to target
+            // Set next of prev to target.
             prev->next = target;
         }
         prev = curr;
         curr = get_next(curr);
-        // reached end of free list, add target to end of list
+        // Reached end of free list, add target to end of list.
         if (curr == NULL) {
             prev->next = target;
             target->next = NULL;
