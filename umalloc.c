@@ -113,7 +113,7 @@ memory_block_t *find(size_t size) {
             memory_block_t* prev_end_address = (memory_block_t*) ((long) prev_block + 16 + get_size(prev_block));
             // prev and curr are right next to one another in memory.
             if (prev_end_address == curr_block) {
-                curr_block = coalesce(prev_block);
+                //curr_block = coalesce(prev_block);
             }
         }
         size_t curr_size = get_size(curr_block);
