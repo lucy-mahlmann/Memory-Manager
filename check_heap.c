@@ -32,15 +32,15 @@ int check_heap() {
         }
         // check that free blocks are within the valid heap address
         if (current < lowest_heap && (memory_block_t*)((long) current + current_size) > highest_heap) {   
-            return -1;
+            return -2;
         }
         // check if block is 16 bit aligned
         if ((long) current % 16 != 0) {
-            return -1;
+            return -3;
         }
         // check if current block is overlapping with the next block
         if (get_next(current) != NULL  && ((long) current + current_size > (long) get_next(current))) {
-            return -1;
+            return -4;
         }
         current = get_next(current);
     }
