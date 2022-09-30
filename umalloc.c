@@ -113,7 +113,7 @@ memory_block_t *find(size_t size) {
             memory_block_t* prev_end_address = (memory_block_t*) ((long) prev_block + 16 + get_size(prev_block));
             // prev and curr are right next to one another in memory.
             if (prev_end_address == curr_block) {
-                //curr_block = coalesce(prev_block);
+                curr_block = coalesce(prev_block);
             }
         }
         size_t curr_size = get_size(curr_block);
@@ -178,7 +178,7 @@ memory_block_t *split(memory_block_t *block, size_t size) { // size does not inc
  * coalesce - coalesces a free memory block with neighbors.
  */
 memory_block_t *coalesce(memory_block_t *block) {
-    printf("coalescing...\n");
+    //printf("coalescing...\n");
     // Update the size of the block that is being joined together.
     block->block_size_alloc = get_size(block) + get_size(get_next(block)) + 16;
     block->next = get_next(get_next(block));
