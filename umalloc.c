@@ -108,14 +108,14 @@ memory_block_t *find(size_t size) {
     memory_block_t* prev_block = free_head;
     while (curr_block != NULL) { 
         // This keeps the free block right after the free head from being coalesced together.
-        if (prev_block != free_head) {
-            // Check if blocks can be coalesced (is curr free block right next to prev free block in memory).
-            memory_block_t* prev_end_address = (memory_block_t*) ((long) prev_block + 16 + get_size(prev_block));
-            // prev and curr are right next to one another in memory.
-            if (prev_end_address == curr_block) {
-                curr_block = coalesce(prev_block);
-            }
-        }
+        // if (prev_block != free_head) {
+        //     // Check if blocks can be coalesced (is curr free block right next to prev free block in memory).
+        //     memory_block_t* prev_end_address = (memory_block_t*) ((long) prev_block + 16 + get_size(prev_block));
+        //     // prev and curr are right next to one another in memory.
+        //     if (prev_end_address == curr_block) {
+        //         curr_block = coalesce(prev_block);
+        //     }
+        // }
         size_t curr_size = get_size(curr_block);
         // Finds the first block that is big enough to satisfy the umalloc request.
         if (size <= curr_size) {
@@ -140,6 +140,7 @@ memory_block_t *find(size_t size) {
 memory_block_t *extend(size_t size) {
     // Extends the heap if possible by size.
     memory_block_t* new_block = (memory_block_t*) csbrk(size + 16);
+    // printf("extending... \n");
     // Immediately sends this block to user to allocate therefore it doesn't have to be added to the free list.
     put_block(new_block, size, true);
 
@@ -153,6 +154,7 @@ memory_block_t *extend(size_t size) {
     }
     return new_block;
 }
+
 
 /*
  *  STUDENT TODO:
@@ -171,6 +173,7 @@ memory_block_t *split(memory_block_t *block, size_t size) { // size does not inc
     // Make new memory block for the allocated block.
     memory_block_t* allocated_block = (memory_block_t*)((long) block + get_size(block) + 16);
     put_block(allocated_block, size, true);
+     //printf("slpitting... \n");
     return allocated_block;
 }
 
@@ -178,7 +181,7 @@ memory_block_t *split(memory_block_t *block, size_t size) { // size does not inc
  * coalesce - coalesces a free memory block with neighbors.
  */
 memory_block_t *coalesce(memory_block_t *block) {
-    //printf("coalescing...\n");
+    //printf("coalescing... sizes \n");
     // Update the size of the block that is being joined together.
     block->block_size_alloc = get_size(block) + get_size(get_next(block)) + 16;
     block->next = get_next(get_next(block));
@@ -195,10 +198,10 @@ int uinit() {
     // Creates a header block that is never allocated to the user. Is the start of the free list.
     memory_block_t* free_head_block = (memory_block_t*) csbrk(PAGESIZE);
     free_head = free_head_block;
-    put_block(free_head_block, 16, false);
+    put_block(free_head_block, 0, false);
     // Creates a block for the rest of the heap given from csbrk that can be allocated.
-    memory_block_t* usable_memory = free_head_block + 2;
-    put_block(usable_memory, PAGESIZE - 48, false);
+    memory_block_t* usable_memory = free_head_block + 1;
+    put_block(usable_memory, PAGESIZE - 32, false);
     free_head_block->next = usable_memory;
     usable_memory->next = NULL;
 
@@ -234,8 +237,9 @@ void *umalloc(size_t size) {
 void ufree(void *ptr) {
     // Get the block address that is associated with the ptr to its payload.
     memory_block_t* target = get_block(ptr);
+     //printf("freeing... \n");
     deallocate(target);
-    memory_block_t* curr = free_head->next;
+    memory_block_t* curr = get_next(free_head);
     memory_block_t* prev = free_head;
     // Search through free list to determine where to add target.
     while (curr != NULL) {
@@ -245,6 +249,15 @@ void ufree(void *ptr) {
             target->next = curr;
             // Set next of prev to target.
             prev->next = target;
+            memory_block_t* prev_end_address = (memory_block_t*) ((long) prev + 16 + get_size(prev));
+            if (prev_end_address == target) {
+                target = coalesce(prev);
+            }
+            memory_block_t* tar_end_address =  (memory_block_t*) ((long) target + 16 + get_size(target));
+            if (tar_end_address == curr) {
+                coalesce(target);
+            }
+            return;
         }
         prev = curr;
         curr = get_next(curr);
