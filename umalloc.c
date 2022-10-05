@@ -15,7 +15,7 @@ const char author[] = ANSI_BOLD ANSI_COLOR_RED "Lucy Mahlmann lam6744" ANSI_RESE
 memory_block_t *free_head;
 // A block pointer to the lowest address in the heap
 memory_block_t* lowest_heap;
-// A block pointer to the highest addres in the heap
+// A block pointer to the highest address in the heap
 memory_block_t* highest_heap;
 
 /*
@@ -92,7 +92,7 @@ memory_block_t *get_block(void *payload) {
  *  STUDENT TODO:
  *      Describe how you select which free block to allocate. What placement strategy are you using?
         
-        -Finds first block in the list that is large enough to fit the allocated data amount but never gives
+        -Finds first free block in the list that is large enough to fit the allocated data amount but never gives
         the free head to be allocated so always go to the next block after the free head. If there is not a free 
         block big enough for the size the user is asking for then extend the heap by size and give that block to 
         be allocated.
@@ -104,8 +104,9 @@ memory_block_t *get_block(void *payload) {
 memory_block_t *find(size_t size) {
     // Size does not include the header bits.
     memory_block_t* curr_block = free_head;
-    curr_block = free_head->next; // never allocate free_head
+    curr_block = get_next(free_head); // never allocate free_head
     memory_block_t* prev_block = free_head;
+    // Go through the free list.
     while (curr_block != NULL) { 
         size_t curr_size = get_size(curr_block);
         // Finds the first block that is big enough to satisfy the umalloc request.
@@ -129,7 +130,7 @@ memory_block_t *find(size_t size) {
  * extend - extends the heap if more memory is required.
  */
 memory_block_t *extend(size_t size) {
-    // Extends the heap if possible by size.
+    // Extends the heap if possible by size + 16.
     memory_block_t* new_block = (memory_block_t*) csbrk(size + 16);
     // Immediately sends this block to user to allocate therefore it doesn't have to be added to the free list.
     put_block(new_block, size, true);
@@ -172,6 +173,7 @@ memory_block_t *split(memory_block_t *block, size_t size) { // size does not inc
 memory_block_t *coalesce(memory_block_t *block) {
     // Update the size of the block that is being joined together.
     block->block_size_alloc = get_size(block) + get_size(get_next(block)) + 16;
+    // Update the next of the joined block to its next block in the free list's next block.
     block->next = get_next(get_next(block));
     return block;
 }
@@ -183,7 +185,7 @@ memory_block_t *coalesce(memory_block_t *block) {
  * along with allocating initial memory.
  */
 int uinit() {
-    // Creates a header block that is never allocated to the user. Is the start of the free list.
+    // Creates a header block that is never allocated to the user has a size of 0. Is the start of the free list.
     memory_block_t* free_head_block = (memory_block_t*) csbrk(PAGESIZE);
     free_head = free_head_block;
     put_block(free_head_block, 0, false);
@@ -196,7 +198,6 @@ int uinit() {
     // Assign pointers to the lowest and highest address in the heap.
     lowest_heap = free_head_block;
     highest_heap = (memory_block_t*)((long) free_head_block + PAGESIZE);
-
     return 0;
 }
 
@@ -207,8 +208,7 @@ void *umalloc(size_t size) {
     size_t payload_size = ALIGN(size);
     // Find a block within the free list that will satisfy the umalloc request or extend the heap.
     memory_block_t* curr_block = find(payload_size);
-    allocate(curr_block);
-    return get_payload(curr_block); // return the ptr that is just the payload (doesn't include the header)
+    return get_payload(curr_block); // return the ptr that is just the payload (doesn't include the header).
 }
 
 /*
@@ -219,14 +219,18 @@ void ufree_check_coalescing(memory_block_t* prev, memory_block_t* target) {
     memory_block_t* next = get_next(target);
     memory_block_t* prev_end_address = (memory_block_t*) ((long) prev + 16 + get_size(prev));
     // If the previous free block and this block are right next to each other in memory coalesce them.
-    if (prev_end_address == target) {
-        target = coalesce(prev);
+    if (prev != free_head) {
+        if (prev_end_address == target) {
+            target = coalesce(prev);
+        }
     }
-    memory_block_t* tar_end_address =  (memory_block_t*) ((long) target + 16 + get_size(target));
-    // If this block and the next free block in the free list are right next to each other in memory 
-    // then coalesce them.
-    if (tar_end_address == next) {
-        coalesce(target);
+    if (next != NULL) {
+        memory_block_t* tar_end_address =  (memory_block_t*) ((long) target + 16 + get_size(target));
+        // If this block and the next free block in the free list are right next to each other in memory 
+        // then coalesce them.
+        if (tar_end_address == next) {
+            coalesce(target);
+        }
     }
 }
 
@@ -267,6 +271,7 @@ void ufree(void *ptr) {
         if (curr == NULL) {
             prev->next = target;
             target->next = NULL;
+            ufree_check_coalescing(prev, target);
         }
     }
 }

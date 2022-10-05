@@ -55,7 +55,8 @@ memory_block_t *extend(size_t size);
 // Always split the given block, using the high end of the block as the part that will be 
 // allocated and the low end will stay a free block.
 memory_block_t *split(memory_block_t *block, size_t size);
-// Never coalesce.
+// Join free blocks that are right next to each other in memory. Coalesce if possible right after you free
+// an allocated block in memory.
 memory_block_t *coalesce(memory_block_t *block);
 
 
