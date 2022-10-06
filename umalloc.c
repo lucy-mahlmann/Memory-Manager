@@ -91,11 +91,12 @@ memory_block_t *get_block(void *payload) {
 /*
  *  STUDENT TODO:
  *      Describe how you select which free block to allocate. What placement strategy are you using?
-        
-        -Finds first free block in the list that is large enough to fit the allocated data amount but never gives
-        the free head to be allocated so always go to the next block after the free head. If there is not a free 
-        block big enough for the size the user is asking for then extend the heap by size and give that block to 
-        be allocated.
+
+        The function goes through the free block list and once it finds a block that is either the same size the user
+        wants to allocate or larger it selects this block to be allocated. The free head block is never given to be 
+        allocated so that a new free head block does not have to be assigned. If the allocated block is bigger than the 
+        requested size it is always split. If there is not a block large enough for the size the user requested 
+        then extend the heap by size and allocate that block.
  */
 
 /*
@@ -103,24 +104,24 @@ memory_block_t *get_block(void *payload) {
  */
 memory_block_t *find(size_t size) {
     // Size does not include the header bits.
-    memory_block_t* curr_block = free_head;
-    curr_block = get_next(free_head); // never allocate free_head
-    memory_block_t* prev_block = free_head;
+    memory_block_t* curr = free_head;
+    curr = get_next(free_head); // never allocate free_head
+    memory_block_t* prev = free_head;
     // Go through the free list.
-    while (curr_block != NULL) { 
-        size_t curr_size = get_size(curr_block);
+    while (curr != NULL) { 
+        size_t curr_size = get_size(curr);
         // Finds the first block that is big enough to satisfy the umalloc request.
         if (size <= curr_size) {
             // Current block is big enough to satify user request. Always split if it is bigger.
             if (size < curr_size) {
-                return split(curr_block, size);
+                return split(curr, size);
             }
-            prev_block->next = get_next(curr_block); // removes the allocated block from the free list
-            allocate(curr_block);
-            return curr_block;
+            prev->next = get_next(curr); // removes the allocated block from the free list
+            allocate(curr);
+            return curr;
         }
-        prev_block = curr_block;
-        curr_block = get_next(curr_block);
+        prev = curr;
+        curr = get_next(curr);
     }
     // Could not find a block large enough for the users request therefore extend the heap.
     return extend(size); 
@@ -150,9 +151,12 @@ memory_block_t *extend(size_t size) {
 /*
  *  STUDENT TODO:
  *      Describe how you chose to split allocated blocks. Always? Sometimes? Never? Which end?
-       
-       - Always split the given block using the high end of the block as the part that will be 
-        allocated and the low end will stay a free block.
+
+        This function is given a block and the size that the allocated block will be. It always splits 
+        the given block no matter what size it is. The high end of the given block will be the allocated 
+        block and the low end will stay a free block so that you do not have to change the free block's
+        header. After splitting the block the function returns the allocated block to be given to the
+        user.
 */
 
 /*
@@ -207,23 +211,27 @@ int uinit() {
 void *umalloc(size_t size) {
     size_t payload_size = ALIGN(size);
     // Find a block within the free list that will satisfy the umalloc request or extend the heap.
-    memory_block_t* curr_block = find(payload_size);
-    return get_payload(curr_block); // return the ptr that is just the payload (doesn't include the header).
+    memory_block_t* curr = find(payload_size);
+    return get_payload(curr); // return the ptr that is just the payload (doesn't include the header).
 }
 
 /*
-    ufree_check_coalescing - checks and coalesces the target block with its previous block in the free 
-    list and/or its next block in the free list if they are right next to each other in memory.
+    ufree_check_coalescing - checks if the target block is right next to its previous block within the free 
+    list and/or its next block within the free list in memory. 
+    If they are adjacent to one another than coalesce blocks together.
 */
 void ufree_check_coalescing(memory_block_t* prev, memory_block_t* target) {
     memory_block_t* next = get_next(target);
     memory_block_t* prev_end_address = (memory_block_t*) ((long) prev + 16 + get_size(prev));
-    // If the previous free block and this block are right next to each other in memory coalesce them.
+   // Check if target block is the first free block after the free head so that you don't 
+   // coalesce the target block with the free head since it is never allocated.
     if (prev != free_head) {
+         // If the previous free block and this block are right next to each other in memory coalesce them.
         if (prev_end_address == target) {
             target = coalesce(prev);
         }
     }
+    // Check if target block is the last free block in the free list.
     if (next != NULL) {
         memory_block_t* tar_end_address =  (memory_block_t*) ((long) target + 16 + get_size(target));
         // If this block and the next free block in the free list are right next to each other in memory 
@@ -237,10 +245,12 @@ void ufree_check_coalescing(memory_block_t* prev, memory_block_t* target) {
 /*
  *  STUDENT TODO:
  *      Describe your free block insertion policy.
-        -The free list is address sorted so insert the block given behind the first free block in the free list
-        that has an address greater than it.
-        -coalesce blocks that are right next to each other in the free list right after they have been added
-        to the free list.
+
+        This function searches through the free list to find the first free block that has an address 
+        greater than the block associated with the ptr given. Then it inserts the given block in front of
+        the first free block with a greater address in order to maintain an address ordered free list.
+        This function also coalesces the given block if there are any adjacent free blocks to it 
+        in memory immediately after it is added to the free list.
 */
 
 /*

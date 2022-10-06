@@ -148,32 +148,14 @@ static int run_trace_line(trace_t *trace, size_t curr_op, int utilization, int r
     if (curr_bytes_in_use > max_bytes_in_use) {
         max_bytes_in_use = curr_bytes_in_use;
     }
-
+  
     if (run_check_heap) {
-        if (check_heap() == -1) {
-            malloc_error(curr_op, "allocated block in free list");
-            return -1;
-        } else if (check_heap() == -2) {
-            malloc_error(curr_op, "free block is outside of valid heap");
-            return -1;
-        } else if (check_heap() == -3) {
-            malloc_error(curr_op, "free block is not 16 bit alligned");
-            return -1;
-        } else if (check_heap() == -4) {
-            malloc_error(curr_op, "free blocks are overlapping");
+        if (check_heap() != 0) {
+            malloc_error(curr_op, "check heap failed.");
             return -1;
         } else {
             printf("Passed check heap.\n");
         }
-
-
-        // // OG
-        // if (check_heap() != 0) {
-        //     malloc_error(curr_op, "check heap failed.");
-        //     return -1;
-        // } else {
-        //     printf("Passed check heap.\n");
-        // }
     }
 
     if (check_correctness(trace, curr_op) == -1) {

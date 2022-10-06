@@ -58,7 +58,8 @@ memory_block_t *split(memory_block_t *block, size_t size);
 // Join free blocks that are right next to each other in memory. Coalesce if possible right after you free
 // an allocated block in memory.
 memory_block_t *coalesce(memory_block_t *block);
-
+// Checks if the target block can be coalesced with the blocks previous to it and after it in the free list.
+void ufree_check_coalescing(memory_block_t* prev, memory_block_t* target); 
 
 // Portion that may not be edited
 int uinit();

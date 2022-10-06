@@ -23,26 +23,26 @@ extern sbrk_block *sbrk_blocks;
  * return code. Asserts are also a useful tool here. 
  */
 int check_heap() {
-    memory_block_t* current = free_head;
-    while(current != NULL) {
-        size_t current_size = get_size(current) + 16;
+    memory_block_t* curr = free_head;
+    while(curr != NULL) {
+        size_t curr_size = get_size(curr) + 16;
         // Check if there are any allocated blocks in the free list.
-        if (is_allocated(current)) {
+        if (is_allocated(curr)) {
             return -1;
         }
         // check that free blocks are within the valid heap address
-        if (current < lowest_heap && (memory_block_t*)((long) current + current_size) > highest_heap) {   
-            return -2;
+        if (curr < lowest_heap && (memory_block_t*)((long) curr + curr_size) > highest_heap) {   
+            return -1;
         }
         // check if block is 16 bit aligned
-        if ((long) current % 16 != 0) {
-            return -3;
+        if ((long) curr % 16 != 0) {
+            return -1;
         }
         // check if current block is overlapping with the next block
-        if (get_next(current) != NULL  && ((long) current + current_size > (long) get_next(current))) {
-            return -4;
+        if (get_next(curr) != NULL  && ((long) curr + curr_size > (long) get_next(curr))) {
+            return -1;
         }
-        current = get_next(current);
+        curr = get_next(curr);
     }
 
     return 0;
