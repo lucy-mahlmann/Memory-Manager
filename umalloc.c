@@ -6,12 +6,8 @@
 
 const char author[] = ANSI_BOLD ANSI_COLOR_RED "Lucy Mahlmann lam6744" ANSI_RESET;
 
-/*
- * The following helpers can be used to interact with the memory_block_t
- * struct, they can be adjusted as necessary.
- */
 
-// A sample pointer to the start of the free list.
+// A pointer to the start of the free list.
 memory_block_t *free_head;
 // A block pointer to the lowest address in the heap
 memory_block_t* lowest_heap;

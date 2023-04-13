@@ -5,10 +5,8 @@
 #define ALIGN(size) (((size) + (ALIGNMENT-1)) & ~(ALIGNMENT-1))
 
 /*
- * memory_block_t - Represents a block of memory managed by the heap. The 
- * struct can be left as is, or modified for your design.
- * In the current design bit0 is the allocated bit
- * bits 1-3 are unused.
+ * memory_block_t - Represents a block of memory managed by the heap. 
+ * bit0 - 3 are used for the header
  * and the remaining 60 bit represent the size.
  */
 typedef struct memory_block_struct {
