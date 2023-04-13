@@ -48,7 +48,7 @@ Free list
 // A pointer to the start of the free list.
 memory_block_t *free_head;
 ```
-umalloc()
+Structure of umalloc ()
 
 <img
   src="umalloc-block-diagram.jpg"
@@ -56,25 +56,31 @@ umalloc()
   title="Optional title"
   style="display: inline-block; margin: 0 auto; width: 530px; height: 400px">
 
-ufree
+Structure of ufree ()
+
+TODO: add ufree block diagram
 
 <!-- APPROACH/EXECUTION -->
 ## Approach/Execution
 
+TODO: describe overall approach
+TODO: describe testing that was done
+
+TODO: include an overall block diagram of main program functions
 
 
 <!-- LEARNING CHALLENGES -->
 ## Learning Challenges
 
+The major problems that I encountered while programming/designing include:
+* what to do if the head of the free list is allocated since the program keeps track of the free list by storing a pointer to the first block
+* how to determine when blocks that are in the free list should be coallesced
+* what type of allocation strategy to choose that would be both simple and time efficient
 
-<!-- USAGE EXAMPLES -->
-## Usage
-
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
-
-TODO: include pdf of documentation
-
-
+How I solved these problems:
+* including a free_head_block in the free list which has a size of 0 and can never be allocated (makes accessing free list simpler and only wastes 16 bytes for header)
+* making the free list sorted by address therefore if blocks on the free list are contiguous in memory they would be adjacent in the free list
+* chose first fit since my free list is address ordered rather than ordered by size of blocks therefore is O(N)
 
 <!-- CONTACT -->
 ## Contact
