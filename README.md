@@ -7,7 +7,9 @@
     <li>
       <a href="#about-the-project">About The Project</a>
     </li>
-    <li><a href="#usage">Usage</a></li>
+    <li><a href="#structure">Structure</a></li>
+    <li><a href="#approach/execution">Approach/Execution</a></li>
+    <li><a href="#learning challenges">Learning Challenges</a></li>
     <li><a href="#contact">Contact</a></li>
   </ol>
 </details>
@@ -23,6 +25,40 @@ Dynamic storage allocator for C programs that is space-effiecient and has high-t
 * Implements first fit allocation and splits allocated blocks to reduce internal fragmentation
 * Frees block associated with the given pointer 
 * Coalesces contiguous free blocks in the free list to reduce external fragmentation
+
+<!-- STRUCTURE -->
+## Structure
+
+The blocks in memory that are managed by the heap are represented as memory_block_struct
+
+```
+typedef struct memory_block_struct {
+    size_t block_size_alloc; // size of block not including the header
+    struct memory_block_struct *next; // points to next block in free list
+} memory_block_t;
+```
+The blocks in memory that are unallocated are stored in a free list in address sorted order (larger address to smaller or vice versa???). 
+
+Free list
+* Singly linked list
+* Holds all of the unallocated blocks that are within the heap
+* Contains a free_head_block which is always the first element in the free list with a size of 0
+
+```
+// A pointer to the start of the free list.
+memory_block_t *free_head;
+```
+umalloc
+
+
+ufree
+<!-- APPROACH/EXECUTION -->
+## Approach/Execution
+
+
+
+<!-- LEARNING CHALLENGES -->
+## Learning Challenges
 
 
 <!-- USAGE EXAMPLES -->
