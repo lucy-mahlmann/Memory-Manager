@@ -48,10 +48,16 @@ Free list
 // A pointer to the start of the free list.
 memory_block_t *free_head;
 ```
-umalloc
+umalloc()
 
+<img
+  src="umalloc-block-diagram.jpg"
+  alt="Alt text"
+  title="Optional title"
+  style="display: inline-block; margin: 0 auto; width: 530px; height: 400px">
 
 ufree
+
 <!-- APPROACH/EXECUTION -->
 ## Approach/Execution
 
