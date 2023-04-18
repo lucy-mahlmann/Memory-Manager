@@ -15,7 +15,7 @@
 </details>
 
 
-
+ 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
@@ -52,13 +52,13 @@ Structure of umalloc ()
 
 <img
   src="umalloc-block-diagram.jpg"
-  alt="Alt text"
-  title="Optional title"
   style="display: inline-block; margin: 0 auto; width: 530px; height: 400px">
 
 Structure of ufree ()
 
-TODO: add ufree block diagram
+<img
+  src="ufree-block-diagram.jpg"
+  style="display: inline-block; margin: 0 auto; width: 458px; height: 466px">
 
 <!-- APPROACH/EXECUTION -->
 ## Approach/Execution
