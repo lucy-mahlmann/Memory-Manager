@@ -8,8 +8,8 @@
       <a href="#about-the-project">About The Project</a>
     </li>
     <li><a href="#structure">Structure</a></li>
-    <li><a href="#approach/execution">Approach/Execution</a></li>
-    <li><a href="#learning challenges">Learning Challenges</a></li>
+    <li><a href="#execution">Execution</a></li>
+    <li><a href="#learning-challenges">Learning Challenges</a></li>
     <li><a href="#contact">Contact</a></li>
   </ol>
 </details>
@@ -29,7 +29,7 @@ Dynamic storage allocator for C programs that is space-effiecient and has high-t
 <!-- STRUCTURE -->
 ## Structure
 
-The blocks in memory that are managed by the heap are represented as memory_block_struct
+The blocks in memory that are managed by the heap are represented as a memory_block_struct
 
 ```
 typedef struct memory_block_struct {
@@ -37,7 +37,7 @@ typedef struct memory_block_struct {
     struct memory_block_struct *next; // points to next block in free list
 } memory_block_t;
 ```
-The blocks in memory that are unallocated are stored in a free list in address sorted order (larger address to smaller or vice versa???). 
+The blocks in memory that are unallocated are stored in a free list in address sorted order. 
 
 Free list
 * Singly linked list
@@ -60,8 +60,8 @@ Structure of ufree ()
   src="ufree-block-diagram.jpg"
   style="display: inline-block; margin: 0 auto; width: 458px; height: 466px">
 
-<!-- APPROACH/EXECUTION -->
-## Approach/Execution
+<!-- EXECUTION -->
+## Execution
 
 TODO: describe overall approach
 TODO: describe testing that was done
