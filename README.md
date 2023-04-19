@@ -23,13 +23,13 @@ Dynamic storage allocator for C programs that is space-effiecient and has high-t
 
 * Mallocs an allocated block for the given size bytes within the heap region
 * Implements first fit allocation and splits allocated blocks to reduce internal fragmentation
-* Frees block associated with the given pointer 
+* Frees allocated blocks within the heap and adds them back to the free list
 * Coalesces contiguous free blocks in the free list to reduce external fragmentation
 
 <!-- STRUCTURE -->
 ## Structure
 
-The blocks in memory that are managed by the heap are represented as a memory_block_struct
+The blocks in memory that are managed by the heap are represented as a memory_block_struct:
 
 ```
 typedef struct memory_block_struct {
@@ -44,17 +44,13 @@ Free list
 * Holds all of the unallocated blocks that are within the heap
 * Contains a free_head_block which is always the first element in the free list with a size of 0
 
-```
-// A pointer to the start of the free list.
-memory_block_t *free_head;
-```
-Structure of umalloc ()
+Structure of umalloc () in umalloc.c
 
 <img
   src="umalloc-block-diagram.jpg"
   style="display: inline-block; margin: 0 auto; width: 530px; height: 400px">
 
-Structure of ufree ()
+Structure of ufree () in umalloc.c
 
 <img
   src="ufree-block-diagram.jpg"
@@ -63,10 +59,12 @@ Structure of ufree ()
 <!-- EXECUTION -->
 ## Execution
 
-TODO: describe overall approach
-TODO: describe testing that was done
+The free list is initialized with uinit() in umalloc.c which sets up the necessary metadata in the free list and the intial size of the heap to PAGESIZE which is 4,096 bytes. Then subsequent calls to umalloc() and ufree() are made to allocate a block of memory in the heap and to deallocate a block in memory respectively. Calls to ufree() are only guaranteed to work if the pointer ptr passed in was returned by an earlier call to umalloc() and it has not yet been freed. 
 
-TODO: include an overall block diagram of main program functions
+Heap Consistency Check:
+* Check that all pointers in the free list point to a valid free block (within the valid heap and are set to free)
+* Check that no free memory blocks overlap one another
+* Check that each memory block is 16-byte aligned
 
 
 <!-- LEARNING CHALLENGES -->
@@ -78,9 +76,9 @@ The major problems that I encountered while programming/designing include:
 * what type of allocation strategy to choose that would be both simple and time efficient
 
 How I solved these problems:
-* including a free_head_block in the free list which has a size of 0 and can never be allocated (makes accessing free list simpler and only wastes 16 bytes for header)
-* making the free list sorted by address therefore if blocks on the free list are contiguous in memory they would be adjacent in the free list
-* chose first fit since my free list is address ordered rather than ordered by size of blocks therefore is O(N)
+* including a free_head_block in the free list which has a size of 0 and can never be allocated (makes accessing free list simpler and only takes up 16 bytes for the block header)
+* making the free list sorted by address, therefore, if blocks on the free list are contiguous in memory they would be adjacent in the free list
+* chose first fit allocation since my free list is address ordered rather than ordered by size of blocks therefore is O(N)
 
 <!-- CONTACT -->
 ## Contact
@@ -89,5 +87,4 @@ Lucy Mahlmann - lmahlmann@utexas.edu
 
 Project Link: [https://github.com/lucy-mahlmann/MM-Lab-lucy-mahlmann](https://github.com/lucy-mahlmann/MM-Lab-lucy-mahlmann)
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
