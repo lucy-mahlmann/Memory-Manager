@@ -29,7 +29,7 @@ Dynamic storage allocator for C programs that is space-effiecient and has high-t
 <!-- STRUCTURE -->
 ## Structure
 
-The blocks in memory that are managed by the heap are represented as a memory_block_struct:
+The blocks in memory that are managed by the heap are represented as a `memory_block_struct`:
 
 ```
 typedef struct memory_block_struct {
@@ -44,13 +44,13 @@ Free list
 * Holds all of the unallocated blocks that are within the heap
 * Contains a free_head_block which is always the first element in the free list with a size of 0
 
-Structure of umalloc () in umalloc.c
+Structure of `umalloc()` in `umalloc.c`
 
 <img
   src="umalloc-block-diagram.jpg"
   style="display: inline-block; margin: 0 auto; width: 530px; height: 400px">
 
-Structure of ufree () in umalloc.c
+Structure of `ufree()` in `umalloc.c`
 
 <img
   src="ufree-block-diagram.jpg"
@@ -59,7 +59,7 @@ Structure of ufree () in umalloc.c
 <!-- EXECUTION -->
 ## Execution
 
-The free list is initialized with uinit() in umalloc.c which sets up the necessary metadata in the free list and the intial size of the heap to PAGESIZE which is 4,096 bytes. Then subsequent calls to umalloc() and ufree() are made to allocate a block of memory in the heap and to deallocate a block in memory respectively. Calls to ufree() are only guaranteed to work if the pointer ptr passed in was returned by an earlier call to umalloc() and it has not yet been freed. 
+The free list is initialized with `uinit()` in `umalloc.c` which sets up the necessary metadata in the free list and the intial size of the heap to `PAGESIZE` which is 4,096 bytes. Then subsequent calls to `umalloc()` and `ufree()` are made to allocate a block of memory in the heap and to deallocate a block in memory respectively. Calls to `ufree()` are only guaranteed to work if the pointer `ptr` passed in was returned by an earlier call to `umalloc()` and it has not yet been freed. 
 
 Heap Consistency Check:
 * Check that all pointers in the free list point to a valid free block (within the valid heap and are set to free)
