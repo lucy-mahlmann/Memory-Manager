@@ -85,6 +85,6 @@ How I solved these problems:
 
 Lucy Mahlmann - lmahlmann@utexas.edu
 
-Project Link: [https://github.com/lucy-mahlmann/MM-Lab-lucy-mahlmann](https://github.com/lucy-mahlmann/MM-Lab-lucy-mahlmann)
+Project Link: [https://github.com/lucy-mahlmann/Memory-Manager](https://github.com/lucy-mahlmann/Memory-Manager)
 
 
